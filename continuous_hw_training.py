@@ -5,7 +5,7 @@ from warpctc_pytorch import CTCLoss
 
 from hw import hw_dataset
 from hw import cnn_lstm
-from hw.hw_dataset import HwDataset
+from hw.hw_dataset import HwDataset, HwDataset2
 
 from utils.dataset_wrapper import DatasetWrapper
 from utils import safe_load
@@ -20,7 +20,7 @@ import time
 import random
 import yaml
 
-from utils.dataset_parse import load_file_list
+from utils.dataset_parse import load_file_list, load_file_list2
 
 def training_step(config):
 
@@ -39,8 +39,8 @@ def training_step(config):
     for k,v in char_set['idx_to_char'].iteritems():
         idx_to_char[int(k)] = v
 
-    training_set_list = load_file_list(train_config['training_set'])
-    train_dataset = HwDataset(training_set_list,
+    training_set_list = load_file_list2(train_config['training_set'])
+    train_dataset = HwDataset2(training_set_list,
                               char_set['char_to_idx'], augmentation=True,
                               img_height=hw_network_config['input_height'])
 
@@ -52,8 +52,8 @@ def training_step(config):
     batches_per_epoch = int(train_config['hw']['images_per_epoch']/train_config['hw']['batch_size'])
     train_dataloader = DatasetWrapper(train_dataloader, batches_per_epoch)
 
-    test_set_list = load_file_list(train_config['validation_set'])
-    test_dataset = HwDataset(test_set_list,
+    test_set_list = load_file_list2(train_config['validation_set'])
+    test_dataset = HwDataset2(test_set_list,
                              char_set['char_to_idx'],
                              img_height=hw_network_config['input_height'],
                              random_subset_size=train_config['hw']['validation_subset_size'])
