@@ -10,8 +10,8 @@ network:
   hw:
     num_of_outputs: 197
     num_of_channels: 3
-    cnn_out_size: 512 #architecture dependant
-    input_height: 32 #architecture dependant
+    cnn_out_size: 1024 #architecture dependant
+    input_height: 60 #architecture dependant
     char_set_path: "data/char_set.json"
 
   lm:
@@ -25,12 +25,12 @@ pretraining:
   training_set:
     img_folder: ""
     json_folder: ""
-    file_list: "data/train_a_training_set.json"
+    file_list: "cod_iam_hwr_train.json"
 
   validation_set:
     img_folder: ""
     json_folder: ""
-    file_list: "data/train_a_validation_set.json"
+    file_list: "cod_iam_hwr_val.json"
 
   sol:
     alpha_alignment: 0.1
@@ -55,7 +55,7 @@ pretraining:
     learning_rate: 0.0002 #pyyaml bug: no scientific notation
     batch_size: 8
     images_per_epoch: 1000
-    stop_after_no_improvement: 10
+    stop_after_no_improvement: 200
 
   snapshot_path: "data/snapshots/init"
 
@@ -63,12 +63,12 @@ training:
   training_set:
     img_folder: ""
     json_folder: ""
-    file_list: "data/train_b_training_set.json"
+    file_list: "cod_iam_hwr_train.json"
 
   validation_set:
     img_folder: ""
     json_folder: ""
-    file_list: "data/train_b_validation_set.json"
+    file_list: "cod_iam_hwr_val.json"
 
   sol:
     alpha_alignment: 0.1

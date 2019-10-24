@@ -10,8 +10,8 @@ network:
   hw:
     num_of_outputs: 197
     num_of_channels: 3
-    cnn_out_size: 512 #architecture dependant
-    input_height: 32 #architecture dependant
+    cnn_out_size: 1024 #architecture dependant
+    input_height: 60 #architecture dependant
     char_set_path: "data/char_set.json"
 
   lm:
@@ -23,14 +23,14 @@ network:
 
 pretraining:
   training_set:
-    img_folder: ""
+    img_folder: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt"
     json_folder: ""
-    file_list: "data/train_a_training_set.json"
+    file_list: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt/transcriptions_names_only_full_names_train.txt"
 
   validation_set:
-    img_folder: ""
+    img_folder: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt"
     json_folder: ""
-    file_list: "data/train_a_validation_set.json"
+    file_list: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt/transcriptions_names_only_full_names_val.txt"
 
   sol:
     alpha_alignment: 0.1
@@ -53,22 +53,22 @@ pretraining:
 
   hw:
     learning_rate: 0.0002 #pyyaml bug: no scientific notation
-    batch_size: 8
-    images_per_epoch: 1000
-    stop_after_no_improvement: 10
+    batch_size: 32
+    images_per_epoch: 10000
+    stop_after_no_improvement: 200
 
-  snapshot_path: "data/snapshots/init"
+  snapshot_path: "data/20192023_full_name/init"
 
 training:
   training_set:
     img_folder: ""
     json_folder: ""
-    file_list: "data/train_b_training_set.json"
+    file_list: "cod_iam_hwr_train.json"
 
   validation_set:
     img_folder: ""
     json_folder: ""
-    file_list: "data/train_b_validation_set.json"
+    file_list: "cod_iam_hwr_val.json"
 
   sol:
     alpha_alignment: 0.1
@@ -115,10 +115,10 @@ training:
        lf_nms_thresholds: [0.1,0.3,0.5,0.7,0.9]
 
   snapshot:
-    best_overall: "data/snapshots/best_overall"
-    best_validation: "data/snapshots/best_validation"
-    current: "data/snapshots/current"
-    pretrain: "data/snapshots/init"
+    best_overall: "data/20192023_full_name/best_overall"
+    best_validation: "data/20192023_full_name/best_validation"
+    current: "data/20192023_full_name/current"
+    pretrain: "data/20192023_full_name/init"
 
 post_processing:
    sol_threshold: 0.1

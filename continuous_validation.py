@@ -45,7 +45,7 @@ def alignment_step(config, dataset_lookup=None, model_mode='best_validation', pe
         set_list = set_list[start:end]
 
     dataset = AlignmentDataset(set_list, None)
-    dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=0, collate_fn=alignment_dataset.collate)
+    dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=16, collate_fn=alignment_dataset.collate)
 
     char_set_path = config['network']['hw']['char_set_path']
 

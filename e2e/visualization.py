@@ -61,6 +61,9 @@ def draw_output(out, img):
         y_comp = -np.sin(r)
         s = p[3]
 
+        #print ' x, y', x, y
+        #print 'r, s', r, s
+
         rx = x + s * x_comp * 2
         ry = y + s * y_comp * 2
 

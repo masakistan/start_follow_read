@@ -1,7 +1,7 @@
 import editdistance
 def cer(r, h):
     #Remove any double or trailing
-    r = u' '.join(r.split())
+    r = u' '.join(r.decode('utf-8').split())
     h = u' '.join(h.split())
 
     return err(r, h)

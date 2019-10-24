@@ -85,6 +85,7 @@ def select_non_empty_string(out):
 
 def postprocess(out, **kwargs):
     out = copy.copy(out)
+    #print 'before:', out['sol']
 
     # postprocessing should be done with numpy data
     sol_threshold = kwargs.get("sol_threshold", None)
@@ -119,6 +120,7 @@ def postprocess(out, **kwargs):
         pick = nms.lf_non_max_suppression_area(refined_lf, confidences, None, overlap_thresh)
         filter_on_pick(out, pick)
 
+    #print 'after:', out['sol']
     return out
 
 def read_order(out):

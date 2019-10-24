@@ -46,7 +46,7 @@ def training_step(config):
 
     train_dataloader = DataLoader(train_dataset,
                                  batch_size=train_config['hw']['batch_size'],
-                                 shuffle=False, num_workers=0,
+                                 shuffle=False, num_workers=16,
                                  collate_fn=hw_dataset.collate)
 
     batches_per_epoch = int(train_config['hw']['images_per_epoch']/train_config['hw']['batch_size'])
@@ -60,7 +60,7 @@ def training_step(config):
 
     test_dataloader = DataLoader(test_dataset,
                                  batch_size=train_config['hw']['batch_size'],
-                                 shuffle=False, num_workers=0,
+                                 shuffle=False, num_workers=16,
                                  collate_fn=hw_dataset.collate)
 
     hw = cnn_lstm.create_model(hw_network_config)

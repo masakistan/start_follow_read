@@ -97,13 +97,43 @@ def pt_ori_sca_2_pts(state):
 
     return out
 
-def pt_xyxy_2_xyrs(state):
-    out = Variable(torch.ones(state.data.shape[0], 5).type(state.data.type()))
+def pt_maskrcnn_2_xyrs(state):
+    #out = Variable(torch.ones(state.data.shape[0], 5).type(state.data.type()))
+    print 'state', state
 
-    x0 = state[:,0:1]
-    y0 = state[:,1:2]
-    x1 = state[:,2:3]
-    y1 = state[:,3:4]
+    x0 = state[:,:,1:2]
+    y0 = state[:,:,2:3]
+    x1 = state[:,:,3:4]
+    y1 = state[:,:,4:5]
+
+    dx = x0-x1
+    dy = y0-y1
+
+    d = torch.sqrt(dx**2.0 + dy**2.0)/2.0
+
+    mx = x0
+    my = (y0 + y1) / 2.0
+
+    theta = -torch.atan2(dx, -dy)
+    theta *= 0
+    d *= 0
+    d += 20
+
+    ret = torch.cat([
+        state[:,:,0:1],
+        mx, my, theta, d
+    ], 2)
+
+    return ret
+
+def pt_xyxy_2_xyrs(state):
+    #out = Variable(torch.ones(state.data.shape[0], 5).type(state.data.type()))
+    #print 'state', state
+
+    x0 = state[:,:,1:2]
+    y0 = state[:,:,2:3]
+    x1 = state[:,:,3:4]
+    y1 = state[:,:,4:5]
 
     dx = x0-x1
     dy = y0-y1
@@ -114,11 +144,16 @@ def pt_xyxy_2_xyrs(state):
     my = (y0+y1)/2.0
 
     theta = -torch.atan2(dx, -dy)
+    theta *= 0
+    d *= 0
+    d += 20
 
-    return torch.cat([
-        mx, my, theta, d,
-        state[:,4:5]
-    ], 1)
+    ret = torch.cat([
+        state[:,:,0:1],
+        mx, my, theta, d
+    ], 2)
+
+    return ret
 
 def pt_xyrs_2_xyxy(state):
     out = Variable(torch.ones(state.data.shape[0], 5).type(state.data.type()))
@@ -144,10 +179,10 @@ def get_init_matrix(input):
     output[:,1,1] = 1
     output[:,2,2] = 1
 
-    x = input[:,0:1]
-    y = input[:,1:2]
-    angles = input[:,2:3]
-    scaler = input[:,3:4]
+    x = input[:,0:1].reshape(-1)
+    y = input[:,1:2].reshape(-1)
+    angles = input[:,2:3].reshape(-1)
+    scaler = input[:,3:4].reshape(-1)
 
     cosines = torch.cos(angles)
     sinuses = torch.sin(angles)
@@ -167,9 +202,9 @@ def get_step_matrix(input):
     output[:,1,1] = 1
     output[:,2,2] = 1
 
-    x = input[:,0:1]
-    y = input[:,1:2]
-    angles = input[:,2:3]
+    x = input[:,0:1].reshape(-1)
+    y = input[:,1:2].reshape(-1)
+    angles = input[:,2:3].reshape(-1)
 
     cosines = torch.cos(angles)
     sinuses = torch.sin(angles)

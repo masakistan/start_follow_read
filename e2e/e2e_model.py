@@ -8,6 +8,9 @@ from utils import string_utils, error_rates
 from utils import transformation_utils
 import handwriting_alignment_loss
 
+from maskrcnn_benchmark.config import cfg
+from predictor import COCODemo
+
 import e2e_postprocessing
 
 import copy
@@ -24,6 +27,19 @@ class E2EModel(nn.Module):
         self.lf = lf
         self.hw = hw
 
+        # initialize maskrcnn
+        config_file = '/home/masaki/software/start_follow_read_update/maskrcnn-benchmark/configs/e2e_mask_rcnn_R_50_FPN_1x_death_e2e.yaml'
+        # update the config options with the config file
+        cfg.merge_from_file(config_file)
+        # manual override some options
+        cfg.merge_from_list(["MODEL.DEVICE", "cuda"])
+
+        self.coco_demo = COCODemo(
+            cfg,
+            min_image_size=800,
+            confidence_threshold=0.5,
+        )
+
 
 
     def train(self):
@@ -38,7 +54,7 @@ class E2EModel(nn.Module):
 
     def forward(self, x, use_full_img=True, accpet_threshold=0.1, volatile=True, gt_lines=None, idx_to_char=None):
 
-        sol_img = Variable(x['resized_img'].type(self.dtype), requires_grad=False, volatile=volatile)
+        sol_img = Variable(x['full_img'].type(self.dtype), requires_grad=False, volatile=volatile)
 
         if use_full_img:
             img = Variable(x['full_img'].type(self.dtype), requires_grad=False, volatile=volatile)
@@ -49,22 +65,52 @@ class E2EModel(nn.Module):
             scale = 1.0
             results_scale = x['resize_scale']
 
+        #
         original_starts = self.sol(sol_img)
+        top_predictions, predictions = self.coco_demo.run_on_opencv_image(np.squeeze(x['np_img']))
 
-        start = original_starts
+        #print top_predictions
+
+        boxes = top_predictions.bbox
+        labels = top_predictions.get_field("labels")
+        scores = top_predictions.get_field("scores")
+        data = torch.cat((scores.reshape(-1,1), boxes), 1)
+        #print 'data', data.size()
+        starts_xyxy = data[labels == 3]
+        starts_xyrs = transformation_utils.pt_maskrcnn_2_xyrs(torch.from_numpy(np.expand_dims(starts_xyxy, axis = 0)).cuda())
+        #print 'boxes:', boxes
+        #print 'starts xyxy:', starts_xyxy
+        #print 'starts xyxy:', np.expand_dims(starts_xyxy, axis = 0)
+        #print 'starts xyrs:', starts_xyrs
+        
+
+        #start = original_starts
+        #print 'orig starts', original_starts
+
+        start = starts_xyrs
+        #print start
+        #print '*' * 40
+        #print original_starts.size()
+        #print starts_xyrs.size()
 
         #Take at least one point
         sorted_start, sorted_indices = torch.sort(start[...,0:1], dim=1, descending=True)
-        min_threshold = sorted_start[0,1,0].data.cpu()[0]
-        accpet_threshold = min(accpet_threshold, min_threshold)
+        #print sorted_start
+        #min_threshold = sorted_start[0,1,0].item()
+        #accpet_threshold = min(accpet_threshold, min_threshold)
+        #print 'threshold', accpet_threshold
 
-        select = original_starts[...,0:1] >= accpet_threshold
+        select = start[...,0:1] >= accpet_threshold
+        select = start[...,0:1] >= 0.47
 
         select_idx = np.where(select.data.cpu().numpy())[1]
 
         select = select.expand(select.size(0), select.size(1), start.size(2))
         select = select.detach()
+        #print 'select', select
         start = start[select].view(start.size(0), -1, start.size(2))
+        #print 'start', start
+        #print 'start xyxy:', transformation_utils.pt_xyrs_2_xyxy(start)
 
         perform_forward = len(start.size()) == 3
 
@@ -74,21 +120,30 @@ class E2EModel(nn.Module):
         forward_img = img
 
         start = start.transpose(0,1)
+        #print 'start transpose:', start
 
         positions = torch.cat([
-           start[...,1:3]  * scale,
+           start[...,1:3],
+           #start[...,1:3]  * scale,
            start[...,3:4],
-           start[...,4:5]  * scale,
+           start[...,4:5],
+           #start[...,4:5]  * scale,
            start[...,0:1]
         ], 2)
+
+        #print 'positions', positions
 
         hw_out = []
         p_interval = positions.size(0)
         lf_xy_positions = None
         line_imgs = []
+
+        #print 'num starts:', start.size()
         for p in xrange(0,min(positions.size(0), np.inf), p_interval):
+            #print 'p', p
             sub_positions = positions[p:p+p_interval,0,:]
             sub_select_idx = select_idx[p:p+p_interval]
+            #print 'sub positions', sub_positions
 
             batch_size = sub_positions.size(0)
             sub_positions = [sub_positions]
@@ -98,11 +153,14 @@ class E2EModel(nn.Module):
             step_size = 5
             extra_bw = 1
             forward_steps = 40
-            
+
+            #print 'expand img', expand_img
+            #print 'sub pos', sub_positions
             grid_line, _, out_positions, xy_positions = self.lf(expand_img, sub_positions, steps=step_size)
             grid_line, _, out_positions, xy_positions = self.lf(expand_img, [out_positions[step_size]], steps=step_size+extra_bw, negate_lw=True)
             grid_line, _, out_positions, xy_positions = self.lf(expand_img, [out_positions[step_size+extra_bw]], steps=forward_steps, allow_end_early=True)
 
+            #print 'xypos:', xy_positions
             if lf_xy_positions is None:
                 lf_xy_positions = xy_positions
             else:
@@ -136,9 +194,9 @@ class E2EModel(nn.Module):
 
                 hw_out.append(out)
 
-
         hw_out = torch.cat(hw_out, 0)
 
+        #print 'positions', positions
 
         return {
             "original_sol": original_starts,

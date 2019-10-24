@@ -5,7 +5,7 @@ from warpctc_pytorch import CTCLoss
 
 from hw import hw_dataset
 from hw import cnn_lstm
-from hw.hw_dataset import HwDataset
+from hw.hw_dataset import HwDataset, HwDataset2
 
 from utils.dataset_wrapper import DatasetWrapper
 from utils import safe_load
@@ -20,7 +20,7 @@ import time
 import random
 import yaml
 
-from utils.dataset_parse import load_file_list
+from utils.dataset_parse import load_file_list, load_file_list2
 
 with open(sys.argv[1]) as f:
     config = yaml.load(f)
@@ -37,27 +37,27 @@ idx_to_char = {}
 for k,v in char_set['idx_to_char'].iteritems():
     idx_to_char[int(k)] = v
 
-training_set_list = load_file_list(pretrain_config['training_set'])
-train_dataset = HwDataset(training_set_list,
+training_set_list = load_file_list2(pretrain_config['training_set'])
+train_dataset = HwDataset2(training_set_list,
                           char_set['char_to_idx'], augmentation=True,
                           img_height=hw_network_config['input_height'])
 
 train_dataloader = DataLoader(train_dataset,
                              batch_size=pretrain_config['hw']['batch_size'],
-                             shuffle=True, num_workers=0, drop_last=True,
+                             shuffle=True, num_workers=16, drop_last=True,
                              collate_fn=hw_dataset.collate)
 
 batches_per_epoch = int(pretrain_config['hw']['images_per_epoch']/pretrain_config['hw']['batch_size'])
 train_dataloader = DatasetWrapper(train_dataloader, batches_per_epoch)
 
-test_set_list = load_file_list(pretrain_config['validation_set'])
-test_dataset = HwDataset(test_set_list,
+test_set_list = load_file_list2(pretrain_config['validation_set'])
+test_dataset = HwDataset2(test_set_list,
                          char_set['char_to_idx'],
                          img_height=hw_network_config['input_height'])
 
 test_dataloader = DataLoader(test_dataset,
                              batch_size=pretrain_config['hw']['batch_size'],
-                             shuffle=False, num_workers=0,
+                             shuffle=False, num_workers=16,
                              collate_fn=hw_dataset.collate)
 
 
@@ -133,6 +133,11 @@ for epoch in xrange(1000):
             cer = error_rates.cer(gt_line, pred_str)
             sum_loss += cer
             steps += 1
+            spath = x['hw_path'][i]
+            spath = spath[spath.rfind('/') + 1:]
+            print 'pred:', spath
+            print '\ttrue:', gt_line
+            print '\tpred:', pred_str
 
     cnt_since_last_improvement += 1
     if lowest_loss > sum_loss/steps:

@@ -20,7 +20,7 @@ PADDING_CONSTANT = 0
 def collate(batch):
     batch = [b for b in batch if b is not None]
     #These all should be the same size or error
-    assert len(set([b['line_img'].shape[0] for b in batch])) == 1
+    assert len(set([b['line_img'].shape[0] for b in batch])) == 1, [b['line_img'].shape[0] for b in batch]
     assert len(set([b['line_img'].shape[2] for b in batch])) == 1
 
     dim0 = batch[0]['line_img'].shape[0]
@@ -30,7 +30,7 @@ def collate(batch):
     all_labels = []
     label_lengths = []
 
-    input_batch = np.full((len(batch), dim0, dim1, dim2), PADDING_CONSTANT).astype(np.float32)
+    input_batch = np.full((len(batch), dim0, dim1, dim2), PADDING_CONSTANT, dtype = np.float32)
     for i in xrange(len(batch)):
         b_img = batch[i]['line_img']
         input_batch[i,:,:b_img.shape[1],:] = b_img
@@ -48,11 +48,13 @@ def collate(batch):
     label_lengths = torch.from_numpy(label_lengths.astype(np.int32))
 
     return {
+        'hw_path': [b['hw_path'] for b in batch],
         "line_imgs": line_imgs,
         "labels": labels,
         "label_lengths": label_lengths,
         "gt": [b['gt'] for b in batch]
     }
+
 
 class HwDataset(Dataset):
     def __init__(self, set_list, char_to_idx, augmentation=False, img_height=32, random_subset_size=None):
@@ -81,8 +83,6 @@ class HwDataset(Dataset):
         self.char_to_idx = char_to_idx
         self.augmentation = augmentation
         self.warning=False
-
-
 
     def __len__(self):
         return len(self.detailed_ids)
@@ -134,6 +134,68 @@ class HwDataset(Dataset):
 
 
         return {
+            'hw_path': hw_path, 
+            "line_img": img,
+            "gt": gt,
+            "gt_label": gt_label
+        }
+
+    
+class HwDataset2(Dataset):
+    def __init__(self, set_list, char_to_idx, augmentation=False, img_height=32, random_subset_size=None):
+
+        self.img_height = img_height
+
+        self.ids = [x[0] for x in set_list]
+        self.labels = [x[1] for x in set_list]
+
+        print 'total items', len(self.ids)
+
+        self.char_to_idx = char_to_idx
+        self.augmentation = augmentation
+        self.warning=False
+
+    def __len__(self):
+        return len(self.ids)
+
+    def __getitem__(self, idx):
+        #ids_idx, line_idx = self.detailed_ids[idx]
+        img_path = self.ids[idx]
+        label = self.labels[idx]
+
+        img = cv2.imread(img_path)
+
+        if img is None:
+            print('image is none!', img_path)
+            return None
+
+        if img.shape[0] != self.img_height:
+            if img.shape[0] < self.img_height and not self.warning:
+                self.warning = True
+                print "WARNING: upsampling image to fit size"
+            percent = float(self.img_height) / img.shape[0]
+            img = cv2.resize(img, (0,0), fx=percent, fy=percent, interpolation = cv2.INTER_CUBIC)
+
+        if img is None:
+            print('image resized to none!', img_path)
+            return None
+
+        if self.augmentation:
+            img = augmentation.apply_random_color_rotation(img)
+            img = augmentation.apply_tensmeyer_brightness(img)
+            img = grid_distortion.warp_image(img)
+
+        img = img.astype(np.float32)
+        img = img / 128.0 - 1.0
+
+        gt = label
+        if len(gt) == 0:
+            return None
+        gt_label = string_utils.str2label_single(gt, self.char_to_idx)
+
+
+        return {
+            'hw_path': img_path, 
             "line_img": img,
             "gt": gt,
             "gt_label": gt_label

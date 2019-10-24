@@ -113,8 +113,8 @@ def main():
         out = dict(out)
 
         image_path = str(out['image_path'])
-        print image_path
         org_img = cv2.imread(image_path)
+        print image_path
 
         # Postprocessing Steps
         out['idx'] = np.arange(out['sol'].shape[0])

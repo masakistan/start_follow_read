@@ -35,7 +35,7 @@ train_dataset = SolDataset(training_set_list,
 
 train_dataloader = DataLoader(train_dataset,
                               batch_size=pretrain_config['sol']['batch_size'],
-                              shuffle=True, num_workers=0,
+                              shuffle=True, num_workers=16,
                               collate_fn=sol.sol_dataset.collate)
 
 batches_per_epoch = int(pretrain_config['sol']['images_per_epoch']/pretrain_config['sol']['batch_size'])
@@ -45,7 +45,7 @@ test_set_list = load_file_list(pretrain_config['validation_set'])
 test_dataset = SolDataset(test_set_list,
                           rescale_range=pretrain_config['sol']['validation_rescale_range'],
                           transform=None)
-test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0, collate_fn=sol.sol_dataset.collate)
+test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=16, collate_fn=sol.sol_dataset.collate)
 
 
 base0 = sol_network_config['base0']
@@ -91,7 +91,7 @@ for epoch in xrange(1000):
         loss.backward()
         optimizer.step()
 
-        sum_loss += loss.data[0]
+        sum_loss += loss.item()
         steps += 1
 
     print "Train Loss", sum_loss/steps
@@ -116,7 +116,7 @@ for epoch in xrange(1000):
         #org_img = drawing.draw_sol_torch(predictions, org_img)
         # cv2.imwrite("data/sol_val_2/{}.png".format(step_i), org_img)
 
-        sum_loss += loss.data[0]
+        sum_loss += loss.item()
         steps += 1
 
     cnt_since_last_improvement += 1

@@ -42,7 +42,7 @@ def training_step(config):
 
     train_dataloader = DataLoader(train_dataset,
                                   batch_size=train_config['sol']['batch_size'],
-                                  shuffle=True, num_workers=0,
+                                  shuffle=True, num_workers=16,
                                   collate_fn=sol_dataset.collate)
 
     batches_per_epoch = int(train_config['sol']['images_per_epoch']/train_config['sol']['batch_size'])
@@ -53,7 +53,7 @@ def training_step(config):
                               rescale_range=train_config['sol']['validation_rescale_range'],
                               random_subset_size=train_config['sol']['validation_subset_size'],
                               transform=None)
-    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0, collate_fn=sol_dataset.collate)
+    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=16, collate_fn=sol_dataset.collate)
 
 
     alpha_alignment = train_config['sol']['alpha_alignment']
@@ -84,7 +84,7 @@ def training_step(config):
             predictions = sol(img)
             predictions = transformation_utils.pt_xyrs_2_xyxy(predictions)
             loss = alignment_loss(predictions, sol_gt, x['label_sizes'], alpha_alignment, alpha_backprop)
-            sum_loss += loss.data[0]
+            sum_loss += loss.item()
             steps += 1
 
         if epoch == 0:
@@ -153,7 +153,7 @@ def training_step(config):
             loss.backward()
             optimizer.step()
 
-            sum_loss += loss.data[0]
+            sum_loss += loss.item()
             steps += 1
 
         print "Train Loss", sum_loss/steps

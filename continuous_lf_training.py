@@ -52,7 +52,7 @@ def training_step(config):
                               augmentation=True)
     train_dataloader = DataLoader(train_dataset,
                                   batch_size=1,
-                                  shuffle=True, num_workers=0,
+                                  shuffle=True, num_workers=16,
                                   collate_fn=lf_dataset.collate)
     batches_per_epoch = int(train_config['lf']['images_per_epoch']/train_config['lf']['batch_size'])
     train_dataloader = DatasetWrapper(train_dataloader, batches_per_epoch)
@@ -62,7 +62,7 @@ def training_step(config):
                              random_subset_size=train_config['lf']['validation_subset_size'])
     test_dataloader = DataLoader(test_dataset,
                                  batch_size=1,
-                                 shuffle=False, num_workers=0,
+                                 shuffle=False, num_workers=16,
                                  collate_fn=lf_dataset.collate)
 
     _, lf, hw = init_model(config, only_load=['lf', 'hw'])
@@ -193,7 +193,7 @@ def training_step(config):
             loss.backward()
             optimizer.step()
 
-            sum_loss += loss.data[0]
+            sum_loss += loss.item()
             steps += 1
 
 

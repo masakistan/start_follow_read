@@ -54,51 +54,63 @@ if __name__ == "__main__":
     e2e.eval()
 
     for image_path in sorted(image_paths):
-        print image_path
+        #print image_path
 
         org_img = cv2.imread(image_path)
+        #print 'org_img', type(org_img)
 
         target_dim1 = 512
         s = target_dim1 / float(org_img.shape[1])
 
         pad_amount = 128
-        org_img = np.pad(org_img, ((pad_amount,pad_amount),(pad_amount,pad_amount), (0,0)), 'constant', constant_values=255)
+        #org_img = np.pad(org_img, ((pad_amount,pad_amount),(pad_amount,pad_amount), (0,0)), 'constant', constant_values=255)
         before_padding = org_img
 
         target_dim0 = int(org_img.shape[0] * s)
         target_dim1 = int(org_img.shape[1] * s)
 
+        np_img = org_img
+        
         full_img = org_img.astype(np.float32)
         full_img = full_img.transpose([2,1,0])[None,...]
-        full_img = torch.from_numpy(full_img)
         full_img = full_img / 128 - 1
+        full_img = torch.from_numpy(full_img)
 
 
         img = cv2.resize(org_img,(target_dim1, target_dim0), interpolation = cv2.INTER_CUBIC)
+        cv2.imwrite('output/resized.png', img)
         img = img.astype(np.float32)
         img = img.transpose([2,1,0])[None,...]
         img = torch.from_numpy(img)
         img = img / 128 - 1
 
-        out = e2e.forward({
-            "resized_img": img,
-            "full_img": full_img,
-            "resize_scale": 1.0/s
-        }, use_full_img=True)
+        #print 'full img', type(full_img)
 
-        out = e2e_postprocessing.results_to_numpy(out)
+        try:
+            out = e2e.forward({
+                'np_img' : np_img,
+                "resized_img": img,
+                "full_img": full_img,
+                "resize_scale": 1.0/s
+            }, use_full_img=True)
 
-        if out is None:
-            print "No Results"
-            continue
+            out = e2e_postprocessing.results_to_numpy(out)
 
-        # take into account the padding
-        out['sol'][:,:2] = out['sol'][:,:2] - pad_amount
-        for l in out['lf']:
-            l[:,:2,:2] = l[:,:2,:2] - pad_amount
+            if out is None:
+                print "No Results"
+                continue
 
-        out['image_path'] = image_path
+            # take into account the padding
+            # we don't pad anymore so don't do this
+            #out['sol'][:,:2] = out['sol'][:,:2] - pad_amount
+            #for l in out['lf']:
+            #    l[:,:2,:2] = l[:,:2,:2] - pad_amount
 
-        out_name = os.path.basename(image_path)
-        fill_out_name = os.path.join(output_directory, out_name)
-        np.savez_compressed(fill_out_name+".npz", **out)
+            out['image_path'] = image_path
+            #print 'final out:', out['sol']
+
+            out_name = os.path.basename(image_path)
+            fill_out_name = os.path.join(output_directory, out_name)
+            np.savez_compressed(fill_out_name+".npz", **out)
+        except:
+            print 'failed for image! :('

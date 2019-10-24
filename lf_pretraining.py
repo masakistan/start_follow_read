@@ -29,7 +29,7 @@ train_dataset = LfDataset(training_set_list,
                           augmentation=True)
 train_dataloader = DataLoader(train_dataset,
                               batch_size=1,
-                              shuffle=True, num_workers=0,
+                              shuffle=True, num_workers=16,
                               collate_fn=lf_dataset.collate)
 batches_per_epoch = int(pretrain_config['lf']['images_per_epoch']/pretrain_config['lf']['batch_size'])
 train_dataloader = DatasetWrapper(train_dataloader, batches_per_epoch)
@@ -38,7 +38,7 @@ test_set_list = load_file_list(pretrain_config['validation_set'])
 test_dataset = LfDataset(test_set_list)
 test_dataloader = DataLoader(test_dataset,
                              batch_size=1,
-                             shuffle=False, num_workers=0,
+                             shuffle=False, num_workers=16,
                              collate_fn=lf_dataset.collate)
 
 
@@ -78,7 +78,7 @@ for epoch in xrange(1000):
         loss.backward()
         optimizer.step()
 
-        sum_loss += loss.data[0]
+        sum_loss += loss.item()
         steps += 1
 
     print "Train Loss", sum_loss/steps
@@ -105,7 +105,7 @@ for epoch in xrange(1000):
 
         loss = lf_loss.point_loss(xy_output, xy_positions)
 
-        sum_loss += loss.data[0]
+        sum_loss += loss.item()
         steps += 1
 
     cnt_since_last_improvement += 1
