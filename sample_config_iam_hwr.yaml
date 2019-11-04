@@ -99,7 +99,7 @@ training:
 
     batch_size: 8
     refresh_interval: 3600 #seconds
-    images_per_epoch: 20000 #batches
+    images_per_epoch: 16000 #batches
     validation_subset_size: 2000 #images
     reset_interval: 3600 #seconds
 

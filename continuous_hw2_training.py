@@ -5,7 +5,7 @@ from warpctc_pytorch import CTCLoss
 
 from hw import hw_dataset
 from hw import cnn_lstm
-from hw.hw_dataset import HwDataset
+from hw.hw_dataset import HwDataset, HwDataset2
 
 from utils.dataset_wrapper import DatasetWrapper
 from utils import safe_load
@@ -19,9 +19,8 @@ from utils import string_utils, error_rates
 import time
 import random
 import yaml
-from tqdm import tqdm
 
-from utils.dataset_parse import load_file_list
+from utils.dataset_parse import load_file_list, load_file_list2
 
 def training_step(config):
 
@@ -40,28 +39,28 @@ def training_step(config):
     for k,v in char_set['idx_to_char'].iteritems():
         idx_to_char[int(k)] = v
 
-    training_set_list = load_file_list(train_config['training_set'])
-    train_dataset = HwDataset(training_set_list,
+    training_set_list = load_file_list2(train_config['training_set'])
+    train_dataset = HwDataset2(training_set_list,
                               char_set['char_to_idx'], augmentation=True,
                               img_height=hw_network_config['input_height'])
 
     train_dataloader = DataLoader(train_dataset,
                                  batch_size=train_config['hw']['batch_size'],
-                                 shuffle=True, num_workers=16,
+                                 shuffle=False, num_workers=16,
                                  collate_fn=hw_dataset.collate)
 
     batches_per_epoch = int(train_config['hw']['images_per_epoch']/train_config['hw']['batch_size'])
     train_dataloader = DatasetWrapper(train_dataloader, batches_per_epoch)
 
-    test_set_list = load_file_list(train_config['validation_set'])
-    test_dataset = HwDataset(test_set_list,
+    test_set_list = load_file_list2(train_config['validation_set'])
+    test_dataset = HwDataset2(test_set_list,
                              char_set['char_to_idx'],
                              img_height=hw_network_config['input_height'],
                              random_subset_size=train_config['hw']['validation_subset_size'])
 
     test_dataloader = DataLoader(test_dataset,
                                  batch_size=train_config['hw']['batch_size'],
-                                 shuffle=True, num_workers=16,
+                                 shuffle=False, num_workers=16,
                                  collate_fn=hw_dataset.collate)
 
     hw = cnn_lstm.create_model(hw_network_config)
@@ -78,7 +77,7 @@ def training_step(config):
         sum_loss = 0.0
         steps = 0.0
         hw.eval()
-        for x in tqdm(test_dataloader):
+        for x in test_dataloader:
             sys.stdout.flush()
             line_imgs = Variable(x['line_imgs'].type(dtype), requires_grad=False, volatile=True)
             labels =  Variable(x['labels'], requires_grad=False, volatile=True)
@@ -141,9 +140,7 @@ def training_step(config):
         sum_loss = 0.0
         steps = 0.0
         hw.train()
-        for idx, x in enumerate(tqdm(train_dataloader)):
-            #if idx == 0:
-            #    print x['labels']
+        for i, x in enumerate(train_dataloader):
 
             line_imgs = Variable(x['line_imgs'].type(dtype), requires_grad=False)
             labels =  Variable(x['labels'], requires_grad=False)

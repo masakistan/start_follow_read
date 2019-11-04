@@ -145,10 +145,13 @@ for epoch in xrange(1000):
         lowest_loss = sum_loss/steps
         print "Saving Best"
 
+        if not os.path.exists(pretrain_config['best_validation']):
+            os.makedirs(pretrain_config['best_validation'])
         if not os.path.exists(pretrain_config['snapshot_path']):
             os.makedirs(pretrain_config['snapshot_path'])
 
         torch.save(hw.state_dict(), os.path.join(pretrain_config['snapshot_path'], 'hw.pt'))
+        torch.save(hw.state_dict(), os.path.join(pretrain_config['best_validation'], 'hw.pt'))
 
     print "Test Loss", sum_loss/steps, lowest_loss
     print ""

@@ -55,20 +55,20 @@ pretraining:
     learning_rate: 0.0002 #pyyaml bug: no scientific notation
     batch_size: 32
     images_per_epoch: 10000
-    stop_after_no_improvement: 200
+    stop_after_no_improvement: 10
 
   snapshot_path: "data/20191023_surnames/init"
 
 training:
   training_set:
-    img_folder: ""
+    img_folder: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt"
     json_folder: ""
-    file_list: "cod_iam_hwr_train.json"
+    file_list: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt/transcriptions_names_20191023_train.txt"
 
   validation_set:
-    img_folder: ""
+    img_folder: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt"
     json_folder: ""
-    file_list: "cod_iam_hwr_val.json"
+    file_list: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt/transcriptions_names_20191023_val.txt"
 
   sol:
     alpha_alignment: 0.1

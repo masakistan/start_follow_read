@@ -25,12 +25,12 @@ pretraining:
   training_set:
     img_folder: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt"
     json_folder: ""
-    file_list: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt/transcriptions_names_only_full_names_train"
+    file_list: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt/transcriptions_names_dashed_surnames_20191025_train"
 
   validation_set:
     img_folder: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt"
     json_folder: ""
-    file_list: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt/transcriptions_names_only_full_names_val"
+    file_list: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt/transcriptions_names_dashed_surnames_20191025_val"
 
   sol:
     alpha_alignment: 0.1
@@ -57,18 +57,19 @@ pretraining:
     images_per_epoch: 10000
     stop_after_no_improvement: 10
 
-  snapshot_path: "data/20191023_full_name/init"
+  snapshot_path: "data/20191025_dashed_surname/init"
+  best_validation: "data/20191025_dashed_surname/best_validation"
 
 training:
   training_set:
     img_folder: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt"
     json_folder: ""
-    file_list: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt/transcriptions_names_only_full_names_train"
+    file_list: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt/transcriptions_names_dashed_surnames_20191025_train"
 
   validation_set:
     img_folder: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt"
     json_folder: ""
-    file_list: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt/transcriptions_names_only_full_names_val"
+    file_list: "/home/masaki/shared_data/census/census_1930/gt/census_1930s_names_gt/transcriptions_names_dashed_surnames_20191025_val"
 
   sol:
     alpha_alignment: 0.1
@@ -115,10 +116,10 @@ training:
        lf_nms_thresholds: [0.1,0.3,0.5,0.7,0.9]
 
   snapshot:
-    best_overall: "data/20191023_full_name/best_overall"
-    best_validation: "data/20191023_full_name/best_validation"
-    current: "data/20191023_full_name/current"
-    pretrain: "data/20191023_full_name/init"
+    best_overall: "data/20191025_dashed_surname/best_overall"
+    best_validation: "data/20191025_dashed_surname/best_validation"
+    current: "data/20191025_dashed_surname/current"
+    pretrain: "data/20191025_dashed_surname/init"
 
 post_processing:
    sol_threshold: 0.1

@@ -8,7 +8,7 @@ def torch_state(path):
             state = torch.load(path)
             return state
         except:
-            print "Failed to load",i,path
+            print "Failed to load state",i,path
             time.sleep(i)
             pass
 
@@ -22,7 +22,7 @@ def json_state(path):
                 state = json.load(f)
             return state
         except:
-            print "Failed to load",i,path
+            print "Failed to load json",i,path
             time.sleep(i)
             pass
 
