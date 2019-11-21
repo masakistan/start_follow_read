@@ -7,6 +7,7 @@ def str2label_single(value, characterToIndex={}, unknown_index=None):
     label = []
     for v in value:
         if v not in characterToIndex:
+            print("WARNING: unknonw character: {}".format(v))
             continue
             # raise "Unknown Charactor to Label conversion"
         label.append(characterToIndex[v])

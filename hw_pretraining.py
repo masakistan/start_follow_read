@@ -116,10 +116,12 @@ for epoch in xrange(1000):
     steps = 0.0
     hw.eval()
 
+    output_preds = []
     for x in test_dataloader:
-        line_imgs = Variable(x['line_imgs'].type(dtype), requires_grad=False, volatile=True)
-        labels =  Variable(x['labels'], requires_grad=False, volatile=True)
-        label_lengths = Variable(x['label_lengths'], requires_grad=False, volatile=True)
+        with torch.no_grad():
+            line_imgs = Variable(x['line_imgs'].type(dtype), requires_grad=False)
+            labels =  Variable(x['labels'], requires_grad=False)
+            label_lengths = Variable(x['label_lengths'], requires_grad=False)
 
         preds = hw(line_imgs).cpu()
 
@@ -135,9 +137,14 @@ for epoch in xrange(1000):
             steps += 1
             spath = x['hw_path'][i]
             spath = spath[spath.rfind('/') + 1:]
-            print 'pred:', spath
-            print '\ttrue:', gt_line
-            print '\tpred:', pred_str
+            output_preds.append((spath, gt_line, pred_str))
+            #print 'pred:', spath
+            #print '\ttrue:', gt_line
+            #print '\tpred:', pred_str
+
+    for i in range(1000):
+        fp, gt, pr = output_preds[i]
+        print "{}\n\ttrue: {}\n\tpred: {}".format(fp, gt, pr)
 
     cnt_since_last_improvement += 1
     if lowest_loss > sum_loss/steps:

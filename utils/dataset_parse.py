@@ -24,6 +24,8 @@ def load_file_list2(config):
     with open(file_list_path) as f:
         for line in f:
             line = line.strip().split()
+            if len(line) == 1:
+                line.append("***")
             data.append([line[1], " ".join(line[2:])])
 
     for d in data:
