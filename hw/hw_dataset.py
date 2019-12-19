@@ -10,7 +10,7 @@ import cv2
 import numpy as np
 import math
 
-import grid_distortion
+from . import grid_distortion
 
 from utils import string_utils, safe_load, augmentation
 
@@ -78,7 +78,7 @@ class HwDataset(Dataset):
 
         if random_subset_size is not None:
             self.detailed_ids = random.sample(self.detailed_ids, min(random_subset_size, len(self.detailed_ids)))
-        print len(self.detailed_ids)
+        print(len(self.detailed_ids))
 
         self.char_to_idx = char_to_idx
         self.augmentation = augmentation
@@ -92,11 +92,11 @@ class HwDataset(Dataset):
         gt_json_path, img_path = self.ids[ids_idx]
         gt_json = safe_load.json_state(gt_json_path)
         if gt_json is None:
-            print "WARNING: no gt json {}".format(img_path)
+            print("WARNING: no gt json {}".format(img_path))
             return None
 
         if 'hw_path' not in gt_json[line_idx]:
-            print "WARNING: no hw path {}".format(img_path)
+            print("WARNING: no hw path {}".format(img_path))
             return None
 
         hw_path = gt_json[line_idx]['hw_path']
@@ -109,18 +109,18 @@ class HwDataset(Dataset):
         img = cv2.imread(os.path.join(hw_folder, hw_path))
 
         if img is None:
-            print "WARNING: image is none {}".format(img_path)
+            print("WARNING: image is none {}".format(img_path))
             return None
 
         if img.shape[0] != self.img_height:
             if img.shape[0] < self.img_height and not self.warning:
                 self.warning = True
-                #print "WARNING: upsampling image to fit size"
+                #print("WARNING: upsampling image to fit size")
             percent = float(self.img_height) / img.shape[0]
             img = cv2.resize(img, (0,0), fx=percent, fy=percent, interpolation = cv2.INTER_CUBIC)
 
         if img is None:
-            print "WARNING: image is none after upsampling {}".format(img_path)
+            print("WARNING: image is none after upsampling {}".format(img_path))
             return None
 
         if self.augmentation:
@@ -133,19 +133,19 @@ class HwDataset(Dataset):
 
         gt = gt_json[line_idx]['gt']
         if len(gt) == 0:
-            print "WARNING: gt is empty string {}".format(join(*img_path))
+            print("WARNING: gt is empty string {}".format(join(*img_path)))
             return None
         gt_label = string_utils.str2label_single(gt, self.char_to_idx)
 
 
         return {
-            'hw_path': hw_path, 
+            'hw_path': hw_path,
             "line_img": img,
             "gt": gt,
             "gt_label": gt_label
         }
 
-    
+
 class HwDataset2(Dataset):
     def __init__(self, set_list, char_to_idx, augmentation=False, img_height=32, random_subset_size=None):
 
@@ -154,7 +154,7 @@ class HwDataset2(Dataset):
         self.ids = [x[0] for x in set_list]
         self.labels = [x[1] for x in set_list]
 
-        print 'total items', len(self.ids)
+        print('total items', len(self.ids))
 
         self.char_to_idx = char_to_idx
         self.augmentation = augmentation
@@ -177,7 +177,7 @@ class HwDataset2(Dataset):
         if img.shape[0] != self.img_height:
             if img.shape[0] < self.img_height and not self.warning:
                 self.warning = True
-                print "WARNING: upsampling image to fit size"
+                print("WARNING: upsampling image to fit size")
             percent = float(self.img_height) / img.shape[0]
             img = cv2.resize(img, (0,0), fx=percent, fy=percent, interpolation = cv2.INTER_CUBIC)
 
@@ -200,7 +200,7 @@ class HwDataset2(Dataset):
 
 
         return {
-            'hw_path': img_path, 
+            'hw_path': img_path,
             "line_img": img,
             "gt": gt,
             "gt_label": gt_label
