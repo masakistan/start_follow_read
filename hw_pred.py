@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
-from os import listdir
+from os import listdir, walk
 from os.path import isfile, join
 
 from hw import hw_dataset
@@ -10,6 +10,8 @@ from hw.hw_dataset import HwDataset
 
 from utils.dataset_wrapper import DatasetWrapper
 from utils import safe_load
+
+from pathlib import Path
 
 import numpy as np
 import cv2
@@ -30,7 +32,7 @@ def log_softmax(hw):
     return hw
 
 with open(sys.argv[1]) as f:
-    config = yaml.load(f)
+    config = yaml.load(f, Loader=yaml.FullLoader)
 
 img_dir = sys.argv[2]
 
@@ -60,11 +62,17 @@ lowest_loss = np.inf
 
 hw.eval()
 
-img_paths = [f for f in listdir(img_dir) if isfile(join(img_dir, f))]
+#img_paths = [f for f in listdir(img_dir) if isfile(join(img_dir, f))]
+img_paths = list(Path(img_dir).rglob("*.jpg"))
+#print(img_paths)
 
 all_preds = []
-for img_path in sorted(img_paths):
-    img = cv2.imread(os.path.join(img_dir, img_path))
+for img_path in img_paths:
+    img_path = str(img_path)
+    img = cv2.imread(img_path)
+    if img is None:
+        print("image {} is empty".format(img_path))
+        continue
 
     if img.shape[0] != img_height:
         #if img.shape[0] < img_height:
@@ -77,7 +85,11 @@ for img_path in sorted(img_paths):
     #print img
     img = torch.from_numpy(img)
     #img = img.cuda()
-    preds = hw(img).cpu()
+    try:
+        preds = hw(img).cpu()
+    except Exception as e:
+        print("exception: {} on image {}".format(e, img_path))
+        continue
 
     output_batch = preds.permute(1,0,2)
     out = output_batch.data.cpu().numpy()
@@ -85,5 +97,6 @@ for img_path in sorted(img_paths):
     logits = out[0]
     pred, raw_pred = string_utils.naive_decode(logits)
     pred_str = string_utils.label2str_single(pred, idx_to_char, False)
-    print(img_path + '\t' + pred_str)
+    dis_path = img_path[img_path.rfind('/') + 1:]
+    print(dis_path + '\t' + pred_str)
 
