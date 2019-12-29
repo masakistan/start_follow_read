@@ -67,9 +67,11 @@ img_paths = list(Path(img_dir).rglob("*.jpg"))
 #print(img_paths)
 
 all_preds = []
-for img_path in img_paths:
+for img_idx, img_path in enumerate(img_paths):
     img_path = str(img_path)
     img = cv2.imread(img_path)
+    img_orig = img
+    h, w = img.shape[:2]
     if img is None:
         print("image {} is empty".format(img_path))
         continue
@@ -95,7 +97,25 @@ for img_path in img_paths:
     out = output_batch.data.cpu().numpy()
 
     logits = out[0]
+    windows = logits.shape[0]
+    window_width = w // windows
+
+    #print(logits.shape)
+    vals = np.argmax(logits, axis=1)
+    comma_idxs = np.where(vals == 13)[0]
+    if len(comma_idxs) > 0:
+        #print('comma idx', comma_idxs[0])
+        split_idx = comma_idxs[0]
+        split_perc = split_idx / windows
+        split_px = int(w * split_perc) + window_width
+        #print(img_orig.shape)
+        surname = img_orig[:, :split_px, :]
+        out_path = "test_{}.jpg".format(img_idx)
+        #print(out_path)
+        cv2.imwrite(out_path, surname)
     pred, raw_pred = string_utils.naive_decode(logits)
+    #print(pred)
+
     pred_str = string_utils.label2str_single(pred, idx_to_char, False)
     dis_path = img_path[img_path.rfind('/') + 1:]
     print(dis_path + '\t' + pred_str)
