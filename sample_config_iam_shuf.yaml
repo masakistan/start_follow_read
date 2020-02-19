@@ -15,22 +15,22 @@ network:
     char_set_path: "data/char_set.json"
 
   lm:
-    fst_path: "../hwn5-comp-2017/data/comp_lm/data/graph/HCLG.fst"
-    mdl_path: "../hwn5-comp-2017/data/comp_lm/data/lang_test/basic.mdl"
-    words_path: "../hwn5-comp-2017/data/comp_lm/data/graph/words.txt"
-    phones_path: "../hwn5-comp-2017/data/comp_lm/data/lang_test/phones.txt"
+    fst_path: "data/language_model/data/graph/HCLG.fst"
+    mdl_path: "data/language_model/data/lang_test/basic.mdl"
+    words_path: "data/language_model/data/graph/words.txt"
+    phones_path: "data/language_model/data/lang_test/phones.txt"
     beam: 8
 
 pretraining:
   training_set:
-    img_folder: ""
+    img_folder: "/home/masaki/shared_data/iam"
     json_folder: ""
-    file_list: "data/train_a_training_set.json"
+    file_list: "/home/masaki/shared_data/iam/labels/generated_labels_with_id_shuf_train.txt"
 
   validation_set:
-    img_folder: ""
+    img_folder: "/home/masaki/shared_data/iam/"
     json_folder: ""
-    file_list: "data/train_a_validation_set.json"
+    file_list: "/home/masaki/shared_data/iam/labels/generated_labels_with_id_shuf_val.txt"
 
   sol:
     alpha_alignment: 0.1
@@ -53,22 +53,23 @@ pretraining:
 
   hw:
     learning_rate: 0.0002 #pyyaml bug: no scientific notation
-    batch_size: 8
-    images_per_epoch: 1000
+    batch_size: 32
+    images_per_epoch: 10000
     stop_after_no_improvement: 10
 
-  snapshot_path: "data/snapshots/init"
+  snapshot_path: "data/20191120_iam_shuf/init"
+  best_validation: "data/20191120_iam_shuf/best_validation"
 
 training:
   training_set:
-    img_folder: ""
+    img_folder: "/home/masaki/shared_data/iam/"
     json_folder: ""
-    file_list: "data/train_b_training_set.json"
+    file_list: "/home/masaki/shared_data/iam/labels/generated_labels_with_id_shuf_train.txt"
 
   validation_set:
-    img_folder: ""
+    img_folder: "/home/masaki/shared_data/iam/"
     json_folder: ""
-    file_list: "data/train_b_validation_set.json"
+    file_list: "/home/masaki/shared_data/iam/labels/generated_labels_with_id_shuf_val.txt"
 
   sol:
     alpha_alignment: 0.1
@@ -115,10 +116,10 @@ training:
        lf_nms_thresholds: [0.1,0.3,0.5,0.7,0.9]
 
   snapshot:
-    best_overall: "data/pretrained/snapshots/best_overall"
-    best_validation: "data/pretrained/snapshots/best_validation"
-    current: "data/pretrained/snapshots/current"
-    pretrain: "data/pretrained/snapshots/init"
+    best_overall: "data/20191120_iam_shuf/best_overall"
+    best_validation: "data/20191120_iam_shuf/best_validation"
+    current: "data/20191120_iam_shuf/current"
+    pretrain: "data/20191120_iam_shuf/init"
 
 post_processing:
    sol_threshold: 0.1

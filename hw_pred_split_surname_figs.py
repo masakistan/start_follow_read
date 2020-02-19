@@ -77,8 +77,12 @@ img_paths = list(Path(img_dir).rglob("*.jpg"))
 all_preds = []
 for img_idx, img_path in enumerate(img_paths):
     img_path = str(img_path)
+    print('processing:', img_path)
     img = cv2.imread(img_path)
     img_orig = img
+    if img is None:
+        print("\tWARNING: image coudln't be loaded")
+        continue
     h, w = img.shape[:2]
     if img is None:
         print("image {} is empty".format(img_path))
@@ -117,14 +121,14 @@ for img_idx, img_path in enumerate(img_paths):
     surname_split = pred_str.split(',')
     if len(surname_split) > 1 and surname_split[0] != '---':
 
-        print(logits.shape)
+        #print(logits.shape)
         vals = np.argmax(logits, axis=1)
-        print(vals)
+        #print(vals)
         comma_idxs = np.where(vals == 13)[0]
         split_idx = comma_idxs[0]
         split_perc = split_idx / windows
         split_px = int(w * split_perc) + window_width
-        print(img_orig.shape)
+        #print(img_orig.shape)
 
         surname = img_orig[:, :split_px, :]
         out_path = join(out_dir, dis_path)

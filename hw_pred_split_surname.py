@@ -78,6 +78,9 @@ all_preds = []
 for img_idx, img_path in enumerate(img_paths):
     img_path = str(img_path)
     img = cv2.imread(img_path)
+    if img is None:
+        print("\tcouldn't open {}".format(img_path))
+        continue
     img_orig = img
     h, w = img.shape[:2]
     if img is None:
